@@ -5,5 +5,5 @@ A shared repository for Python development
 A shared package that gives a simple interface for URL requests
 
 import the following to use the package:
-    from shared_http.request import get, get_async
-    from shared_http.request_params import RequestResponse,Url,ProtocolType
+- from shared_http.request import get, get_async
+- from shared_http.request_params import RequestResponse,Url,ProtocolType

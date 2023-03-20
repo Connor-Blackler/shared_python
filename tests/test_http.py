@@ -1,5 +1,5 @@
 from shared_http.request import get
-from shared_http.request_params import RequestResponse,Url,ProtocolType
+from shared_http.request_params import Url,ProtocolType
 
 def test_Url() -> None:
     data = Url()
