@@ -11,3 +11,6 @@ import the following to use the package:
 # shared_open_ai
 A shared package that allows communication to the OpenAI api, currently supported:
 - chat
+
+# shared_database
+A shared package that gives functionality to salted encrypt passwords, and determine if a password + salt matches the encrypted password
