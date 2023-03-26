@@ -1,4 +1,4 @@
-"""A decorator that ensures singleton desing pattern"""
+"""A decorator that ensures singleton design pattern"""
 def singleton(this_class):
     singleton_instances = {}
     def get_instance():
