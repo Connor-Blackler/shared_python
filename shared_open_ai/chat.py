@@ -5,29 +5,53 @@ from dataclasses import dataclass
 from .get_api_key import OpenAIApiKey
 from ._params import Role,Model
 
-@dataclass
-class _message():
-    role: Role
-    content: str
-
-    def generate_request_str(self) -> dict:
-        return {"role":str(self.role), "content":self.content}
+openai.api_key = OpenAIApiKey().get_api_key()
 
 @dataclass
-class _open_ai_conversation():
-    _chat_context: list[_message] = []
+class _Message():
+    _role: Role
+    _content: str
+    request_str = ""
 
-    def generate_request_str(self) -> dict:
-        ...
+    def __post_init__(self) -> None:
+        self.request_str = {"role": f"{self._role.value}","content":f"{self._content}"}
 
-class openAi():
+class _OpenAiConversation():
+    """A class that emulates an open ai conversation"""
+    def __init__(self) -> None:
+        self._chat_context: list[_Message] = []
+
+    def as_list(self) -> list:
+        """returns the conversation as a list, each entry of the conversation is a dictionary"""
+        ret = []
+        for this_message in self._chat_context:
+            ret.append(this_message.request_str)
+
+        return ret
+
+    def append(self, message: _Message) -> None:
+        """Append a new message to the open ai conversation"""
+        self._chat_context.append(message)
+
+class OpenAIChat():
+    """A class that communicates with the OpenAI model"""
     def __init__(self, model: Model = Model.GPT35) -> None:
         self.model = model
-        self.__conversation = _open_ai_conversation()
-        self.__API_KEY = OpenAIApiKey().get_api_key()
+        self.__conversation = _OpenAiConversation()
 
     def send_message(self, message: str) -> str:
-        ...
+        """Send a message to the openAI, whilst appending to the conversation"""
+        self.__conversation.append(_Message(Role.USER, message))
 
-    def conversation(self) -> str:
-        ...
+        response = openai.ChatCompletion.create(
+            model=self.model.value,
+            messages=self.__conversation.as_list())
+
+        assistant_response = response['choices'][0]['message']['content']
+        assistant_response = assistant_response.strip("\n").strip()
+        self.__conversation.append(_Message(Role.ASSISTANT, assistant_response))
+
+        return assistant_response
+
+    def clear(self) -> None:
+        self.__conversation = _OpenAiConversation()
