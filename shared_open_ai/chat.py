@@ -3,9 +3,10 @@
 import openai
 from dataclasses import dataclass
 from .get_api_key import OpenAIApiKey
-from ._params import Role,Model
+from ._params import Role, Model
 
 openai.api_key = OpenAIApiKey().get_api_key()
+
 
 @dataclass
 class _Message():
@@ -14,10 +15,13 @@ class _Message():
     request_str = ""
 
     def __post_init__(self) -> None:
-        self.request_str = {"role": f"{self._role.value}","content":f"{self._content}"}
+        self.request_str = {"role": f"{self._role.value}",
+                            "content": f"{self._content}"}
+
 
 class _OpenAiConversation():
     """A class that emulates an open ai conversation"""
+
     def __init__(self) -> None:
         self._chat_context: list[_Message] = []
 
@@ -33,8 +37,10 @@ class _OpenAiConversation():
         """Append a new message to the open ai conversation"""
         self._chat_context.append(message)
 
+
 class OpenAIChat():
     """A class that communicates with the OpenAI model"""
+
     def __init__(self, model: Model = Model.GPT35) -> None:
         self.model = model
         self.__conversation = _OpenAiConversation()
@@ -49,7 +55,8 @@ class OpenAIChat():
 
         assistant_response = response['choices'][0]['message']['content']
         assistant_response = assistant_response.strip("\n").strip()
-        self.__conversation.append(_Message(Role.ASSISTANT, assistant_response))
+        self.__conversation.append(
+            _Message(Role.ASSISTANT, assistant_response))
 
         return assistant_response
 

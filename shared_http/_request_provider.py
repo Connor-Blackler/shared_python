@@ -3,7 +3,8 @@
 import http.client
 from abc import ABC, abstractmethod
 import httpx
-from .request_params import RequestResponse,Url,ProtocolType
+from .request_params import RequestResponse, Url, ProtocolType
+
 
 class RequestProtocol(ABC):
     """An abstract class for a request protocol"""
@@ -16,6 +17,7 @@ class RequestProtocol(ABC):
     def get(self, this_url: Url) -> RequestResponse:
         """Method that handles the request"""
 
+
 class _Https(RequestProtocol):
     @staticmethod
     def protocol_type() -> ProtocolType:
@@ -23,7 +25,8 @@ class _Https(RequestProtocol):
 
     def get(self, this_url: Url) -> RequestResponse:
         print("Start GET: https")
-        client = http.client.HTTPSConnection(host=self.__trim_host(this_url.host))
+        client = http.client.HTTPSConnection(
+            host=self.__trim_host(this_url.host))
         client.request("GET", this_url.url)
         response = client.getresponse()
         print("End GET: https")
@@ -41,6 +44,7 @@ class _Https(RequestProtocol):
 
         return host
 
+
 class _Httpx(RequestProtocol):
     @staticmethod
     def protocol_type() -> ProtocolType:
@@ -54,16 +58,18 @@ class _Httpx(RequestProtocol):
         return RequestResponse(response.text, response.content,
                                response.encoding, response.status_code)
 
+
 class RequestFactory:
     """A factory that produces a suitable request protocol"""
+
     def _get_protocols(self) -> tuple[RequestProtocol]:
         """An array of all available protocols"""
-        return (_Https,_Httpx)
+        return (_Https, _Httpx)
 
     def get_protocol(self, protocol_type: ProtocolType) -> RequestProtocol:
         """iterates through available different protocols to find the matching protocol 
         to use for this request
-        
+
         """
         for i in self._get_protocols():
             if i.protocol_type() == protocol_type:
