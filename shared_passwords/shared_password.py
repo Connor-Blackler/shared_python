@@ -2,13 +2,15 @@
 
 import os
 import pickle
-from ..shared_design_patterns.singleton_decorator import singleton
+from shared_design_patterns.singleton_decorator import singleton
 
 
 @singleton
-class passwords_repo:
-    """A class that handles a shared_password
+class PasswordRepo:
+    """A class that handles a shared password
     This class is responsible for storing locally on the hard-disk using pickle on a str object
+    The correct way to store a password would be to use environment variables...
+    But lets have some fun.
     """
 
     def __init__(self) -> None:

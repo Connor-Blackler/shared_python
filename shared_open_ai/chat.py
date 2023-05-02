@@ -2,10 +2,10 @@
 
 import openai
 from dataclasses import dataclass
-from .get_api_key import OpenAIApiKey
+from shared_passwords.shared_password import PasswordRepo
 from ._params import Role, Model
 
-openai.api_key = OpenAIApiKey().get_api_key()
+openai.api_key = PasswordRepo().get_password_key("OpenAI_API_KEY")
 
 
 @dataclass
