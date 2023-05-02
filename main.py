@@ -1,11 +1,8 @@
 """Testing module for shared_python"""
+import webbrowser
+from shared_open_ai.image_generator import OpenAiImage
 
-from shared_open_ai.chat import OpenAIChat
+images = OpenAiImage("Image with a dog jumping on a trampoline", 3)
 
-ai_test = OpenAIChat()
-
-response = ai_test.send_message("What is the difference between interpeted langauge and compiled langauge?")
-print(response)
-
-response2 = ai_test.send_message("Great, which of those is python?")
-print(response2)
+for this_url in images:
+    webbrowser.open(this_url)
