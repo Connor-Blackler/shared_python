@@ -3,9 +3,10 @@
 import os
 import pickle
 
+
 class OpenAIApiKey:
     """A class that handles the OpenAI API Key
-    
+
     This class is repsonsible for storing locally on the harddisk using pickle on a str object
     """
 
@@ -26,7 +27,7 @@ class OpenAIApiKey:
         os.makedirs(self.__api_folder(), mode=777, exist_ok=True)
 
         try:
-            load_file = open(self.__api_path(),"rb")
+            load_file = open(self.__api_path(), "rb")
             ret = pickle.load(load_file)
             load_file.close()
 
@@ -39,14 +40,14 @@ class OpenAIApiKey:
                 success = input() == "y"
 
             load_file = open(self.__api_path(), "wb")
-            pickle.dump(ret,load_file)
+            pickle.dump(ret, load_file)
             load_file.close()
 
         return ret
 
     def get_api_key(self) -> str:
         """Method that returns a valid API Key"""
-        load_file = open(self.__api_path(),"rb")
+        load_file = open(self.__api_path(), "rb")
         ret = pickle.load(load_file)
         load_file.close()
 

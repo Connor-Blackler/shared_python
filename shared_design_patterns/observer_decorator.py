@@ -6,9 +6,11 @@ from __future__ import annotations
 from typing import Protocol
 from abc import ABC, abstractmethod
 
+
 class observer(Protocol):
     def update(self, subject: abstract_subject) -> None:
         ...
+
 
 class abstract_subject(ABC):
     @abstractmethod
@@ -22,7 +24,8 @@ class abstract_subject(ABC):
     @abstractmethod
     def update(self) -> None:
         ...
-    
+
+
 def observer(cls):
     def subscribe(self, my_observer: observer) -> None:
         if not my_observer in self.__observers:
@@ -43,5 +46,5 @@ def observer(cls):
 
     def wrapper(*args, **kwargs):
         return cls(*args, **kwargs)
-    
+
     return wrapper
