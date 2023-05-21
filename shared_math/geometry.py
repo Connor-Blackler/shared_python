@@ -11,6 +11,9 @@ class vec2():
         y = self.y + other.y
         return vec2(x, y)
 
+    def __sub__(self, other: vec2):
+        return vec2(self.x - other.x, self.y - other.y)
+
     def translate(self, other: vec2):
         self.x = self.x + other.x
         self.y = self.y + other.y
