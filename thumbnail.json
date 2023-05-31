@@ -1,0 +1,7 @@
+{
+	"title": "Shared Python Code",
+	"image": "https://i.ibb.co/YtSzRzK/recycle.png",
+	"description": "A shared repo to be used by many repositories, must be self-contained",
+	"language": ["Python", "ChatGPT", "ctypes"],
+	"language_bg": ["#3572A5", "#73A697", "#6499D2"]
+}
