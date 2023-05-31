@@ -5,7 +5,16 @@ import hmac
 
 
 def is_correct_password(salt: bytes, password_hash: bytes, password: str) -> bool:
-    """Code to reverse public hash_password to determine if the password is correct"""
+    """
+    Check if the provided password matches the hashed password.
+    Args:
+        salt: The salt used in hashing the password.
+        password_hash: The hashed password.
+        password: The password to be checked.
+
+    Returns:
+        True if the provided password matches the hashed password, False otherwise.
+    """
     return hmac.compare_digest(
         password_hash,
         hashlib.pbkdf2_hmac('sha256', password.encode(),
@@ -14,8 +23,13 @@ def is_correct_password(salt: bytes, password_hash: bytes, password: str) -> boo
 
 
 def hash_password(password: str) -> tuple[bytes, bytes]:
-    """Code to create a salt, and an encryted password returned as a tuple of 
-    salt,hashed_password
+    """
+    Hash a password and generate a random salt.
+    Args:
+    password: The password to be hashed.
+
+    Returns:
+        A tuple containing the generated salt and the hashed password.
     """
     generated_salt = os.urandom(16)
     hashed_password = hashlib.pbkdf2_hmac(

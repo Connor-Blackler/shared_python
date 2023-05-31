@@ -67,7 +67,7 @@ class RequestFactory:
         return (_Https, _Httpx)
 
     def get_protocol(self, protocol_type: ProtocolType) -> RequestProtocol:
-        """iterates through available different protocols to find the matching protocol 
+        """iterates through available different protocols to find the matching protocol
         to use for this request
 
         """

@@ -2,7 +2,7 @@
 
 import os
 import pickle
-from shared_design_patterns.singleton_decorator import singleton
+from ..shared_design_patterns.singleton_decorator import singleton
 
 
 @singleton
