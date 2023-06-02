@@ -1,5 +1,5 @@
 import ctypes
-from shared_decorators.main import time_fn
+from ..shared_decorators.main import time_fn
 
 
 def create_image(width: int, height: int):

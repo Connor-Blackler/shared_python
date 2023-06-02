@@ -1,4 +1,4 @@
-from shared_design_patterns.singleton_decorator import singleton
+from .singleton_decorator import singleton
 
 
 def test_singleton_decorator() -> None:

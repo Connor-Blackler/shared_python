@@ -1,5 +1,5 @@
 import pytest
-from shared_cpp.main import create_image
+from .main import create_image
 
 
 def test_create_image():

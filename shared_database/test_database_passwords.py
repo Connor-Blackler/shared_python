@@ -1,4 +1,4 @@
-from shared_database.passwords import is_correct_password, hash_password
+from .passwords import is_correct_password, hash_password
 import uuid
 
 

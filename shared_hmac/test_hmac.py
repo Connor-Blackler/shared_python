@@ -1,4 +1,4 @@
-from shared_hmac.hmac import Digestable
+from .hmac import Digestable
 import uuid
 
 

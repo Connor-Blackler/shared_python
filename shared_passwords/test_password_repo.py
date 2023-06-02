@@ -1,6 +1,6 @@
 import os
 from pytest import MonkeyPatch
-from shared_passwords.shared_password import PasswordRepo
+from .shared_password import PasswordRepo
 
 
 def my_password() -> str:
