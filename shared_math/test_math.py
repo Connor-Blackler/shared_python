@@ -1,5 +1,5 @@
 import numpy as np
-from .geometry import rect, vec2
+from .geometry import Rect, Vec2, BezierContour, BezierPath, BezierPoint
 from .binary_search import get_insertion_point
 
 
@@ -20,79 +20,171 @@ def test_get_insertion_point():
     assert get_insertion_point(20, len(array)-1, priority_fn) == len(array)
 
 
-class TestRect:
-    def test_contains(self):
-        rect1 = rect(0, 0, 5, 5)
-        rect2 = rect(1, 1, 4, 4)
-        rect3 = rect(6, 6, 10, 10)
-        vec = vec2(2, 2)
-
-        assert rect1.contains(rect2) is True
-        assert rect1.contains(rect3) is False
-        assert rect1.contains(vec) is True
-
-    def test_translate(self):
-        rect1 = rect(0, 0, 5, 5)
-        translation = vec2(2, 3)
-        expected_rect = rect(2, 3, 7, 8)
-
-        rect1.translate(translation)
-
-        assert rect1.minx == expected_rect.minx
-        assert rect1.maxx == expected_rect.maxx
-        assert rect1.miny == expected_rect.miny
-        assert rect1.maxy == expected_rect.maxy
-
-    def test_transform(self):
-        rect1 = rect(0, 0, 5, 5)
-        transformation = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
-        expected_rect = rect(0, 0, 10, 10)
-
-        rect1.transform(transformation)
-
-        assert rect1.minx == expected_rect.minx
-        assert rect1.maxx == expected_rect.maxx
-        assert rect1.miny == expected_rect.miny
-        assert rect1.maxy == expected_rect.maxy
-
-
 class TestVec2:
     def test_add(self):
-        v1 = vec2(1, 2)
-        v2 = vec2(3, 4)
-        expected_result = vec2(4, 6)
+        vec1 = Vec2(1, 2)
+        v2 = Vec2(3, 4)
+        result = vec1 + v2
+        assert result.x == 4
+        assert result.y == 6
 
-        result = v1 + v2
-
-        assert result.x == expected_result.x
-        assert result.y == expected_result.y
-
-    def test_subtract(self):
-        v1 = vec2(5, 8)
-        v2 = vec2(2, 3)
-        expected_result = vec2(3, 5)
-
-        result = v1 - v2
-
-        assert result.x == expected_result.x
-        assert result.y == expected_result.y
+    def test_sub(self):
+        vec1 = Vec2(1, 2)
+        v2 = Vec2(3, 4)
+        result = vec1 - v2
+        assert result.x == -2
+        assert result.y == -2
 
     def test_translate(self):
-        vec1 = vec2(2, 3)
-        translation = vec2(4, 5)
-        expected_vec = vec2(6, 8)
-
-        vec1.translate(translation)
-
-        assert vec1.x == expected_vec.x
-        assert vec1.y == expected_vec.y
+        vec = Vec2(1, 2)
+        translation = Vec2(2, 3)
+        vec.translate(translation)
+        assert vec.x == 3
+        assert vec.y == 5
 
     def test_transform(self):
-        vec1 = vec2(2, 3)
-        transformation = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
-        expected_vec = vec2(4, 6)
+        vec = Vec2(1, 2)
+        matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+        vec.transform(matrix)
+        assert vec.x == 2
+        assert vec.y == 4
 
-        vec1.transform(transformation)
 
-        assert vec1.x == expected_vec.x
-        assert vec1.y == expected_vec.y
+class TestRect:
+    def test_translate(self):
+        r1 = Rect(0, 0, 2, 2)
+        translation = Vec2(1, 1)
+        r1.translate(translation)
+        assert r1.minx == 1
+        assert r1.maxx == 3
+        assert r1.miny == 1
+        assert r1.maxy == 3
+
+    def test_transform(self):
+        r1 = Rect(0, 0, 2, 2)
+        matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+        r1.transform(matrix)
+        assert r1.minx == 0
+        assert r1.maxx == 4
+        assert r1.miny == 0
+        assert r1.maxy == 4
+
+    def test_bounds(self):
+        r1 = Rect(0, 0, 2, 2)
+        bounds = r1.bounds()
+        assert bounds.minx == 0
+        assert bounds.maxx == 2
+        assert bounds.miny == 0
+        assert bounds.maxy == 2
+
+
+class TestBezierPoint:
+    def test_translate(self):
+        point = BezierPoint(Vec2(0, 0), Vec2(1, 1), Vec2(2, 2))
+        translation = Vec2(1, 1)
+        point.translate(translation)
+        assert point.pos.x == 1
+        assert point.pos.y == 1
+        assert point.control1.x == 2
+        assert point.control1.y == 2
+        assert point.control2.x == 3
+        assert point.control2.y == 3
+
+    def test_transform(self):
+        point = BezierPoint(Vec2(1, 2), Vec2(2, 3), Vec2(3, 4))
+        matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+        point.transform(matrix)
+        assert point.pos.x == 2
+        assert point.pos.y == 4
+        assert point.control1.x == 4
+        assert point.control1.y == 6
+        assert point.control2.x == 6
+        assert point.control2.y == 8
+
+
+class TestBezierContour:
+    def test_translate(self):
+        contour = BezierContour()
+        point = BezierPoint(Vec2(0, 0), Vec2(1, 1), Vec2(2, 2))
+        contour.add_point(point)
+        translation = Vec2(1, 1)
+        contour.translate(translation)
+        assert contour.points[0].pos.x == 1
+        assert contour.points[0].pos.y == 1
+        assert contour.points[0].control1.x == 2
+        assert contour.points[0].control1.y == 2
+        assert contour.points[0].control2.x == 3
+        assert contour.points[0].control2.y == 3
+
+    def test_transform(self):
+        contour = BezierContour()
+        point = BezierPoint(Vec2(1, 2), Vec2(2, 3), Vec2(3, 4))
+        contour.add_point(point)
+        matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+        contour.transform(matrix)
+        assert contour.points[0].pos.x == 2
+        assert contour.points[0].pos.y == 4
+        assert contour.points[0].control1.x == 4
+        assert contour.points[0].control1.y == 6
+        assert contour.points[0].control2.x == 6
+        assert contour.points[0].control2.y == 8
+
+
+class TestBezierPath:
+    def test_translate(self):
+        path = BezierPath()
+        contour = BezierContour()
+        point = BezierPoint(Vec2(0, 0), Vec2(1, 1), Vec2(2, 2))
+        contour.add_point(point)
+        path.add_contour(contour)
+        translation = Vec2(1, 1)
+        path.translate(translation)
+        assert path.contours[0].points[0].pos.x == 1
+        assert path.contours[0].points[0].pos.y == 1
+        assert path.contours[0].points[0].control1.x == 2
+        assert path.contours[0].points[0].control1.y == 2
+        assert path.contours[0].points[0].control2.x == 3
+        assert path.contours[0].points[0].control2.y == 3
+
+    def test_transform(self):
+        path = BezierPath()
+        contour = BezierContour()
+        point = BezierPoint(Vec2(1, 2), Vec2(2, 3), Vec2(3, 4))
+        contour.add_point(point)
+        path.add_contour(contour)
+        matrix = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 1]])
+        path.transform(matrix)
+        assert path.contours[0].points[0].pos.x == 2
+        assert path.contours[0].points[0].pos.y == 4
+        assert path.contours[0].points[0].control1.x == 4
+        assert path.contours[0].points[0].control1.y == 6
+        assert path.contours[0].points[0].control2.x == 6
+        assert path.contours[0].points[0].control2.y == 8
+
+    def test_contains(self):
+        path = BezierPath()
+        contour = BezierContour()
+        point1 = BezierPoint(Vec2(0, 0), Vec2(1, 1), Vec2(2, 2))
+        point2 = BezierPoint(Vec2(3, 3), Vec2(4, 4), Vec2(5, 5))
+        contour.add_point(point1)
+        contour.add_point(point2)
+        path.add_contour(contour)
+        assert path.contains(Vec2(1, 1))
+        assert path.contains(Vec2(3, 3))
+        assert not path.contains(Vec2(6, 6))
+
+    def test_contains_advance(self):
+        path = BezierPath()
+        contour = BezierContour()
+        point1 = BezierPoint(Vec2(0, 0), Vec2(1, 1), Vec2(2, 2))
+        point2 = BezierPoint(Vec2(3, 3), Vec2(4, 4), Vec2(5, 5))
+        point3 = BezierPoint(Vec2(6, 4), Vec2(5.5, 1), Vec2(4, 2))
+        point4 = BezierPoint(Vec2(2, 3), Vec2(1.5, 3.5), Vec2(1, 4))
+        contour.add_point(point1)
+        contour.add_point(point2)
+        contour.add_point(point3)
+        contour.add_point(point4)
+        path.add_contour(contour)
+        assert path.contains(Vec2(1, 1))
+        assert path.contains(Vec2(2.99, 2.99))
+        assert not path.contains(Vec2(6, 6))
