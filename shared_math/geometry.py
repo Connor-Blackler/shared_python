@@ -5,8 +5,8 @@ import numpy as np
 from shapely.geometry import Point, LineString
 
 
-class Vec2():
-    def __init__(self, x: float, y: float) -> None:
+class Vec2:
+    def __init__(self, x: float, y: float):
         self.x = x
         self.y = y
 
@@ -16,14 +16,16 @@ class Vec2():
         return Vec2(x, y)
 
     def __sub__(self, other: Vec2):
-        return Vec2(self.x - other.x, self.y - other.y)
+        x = self.x - other.x
+        y = self.y - other.y
+        return Vec2(x, y)
 
     def to_tuple(self):
         return self.x, self.y
 
     def translate(self, other: Vec2):
-        self.x = self.x + other.x
-        self.y = self.y + other.y
+        self.x += other.x
+        self.y += other.y
 
     def transform(self, matrix: np.ndarray):
         vector = np.array([self.x, self.y, 1])
@@ -32,57 +34,61 @@ class Vec2():
         self.x = transformed_vector[0]
         self.y = transformed_vector[1]
 
+    def __str__(self):
+        return f"Vec2(x={self.x}, y={self.y})"
 
-class Rect():
-    def __init__(self, minx: float, miny: float, maxx: float, maxy: float) -> None:
+
+class Rect:
+    def __init__(self, minx: float, miny: float, maxx: float, maxy: float):
         self.minx = minx
         self.miny = miny
         self.maxx = maxx
         self.maxy = maxy
 
-    def width(self) -> float:
+    def width(self):
         return abs(self.maxx - self.minx)
 
-    def width(self) -> float:
+    def height(self):
         return abs(self.maxy - self.miny)
 
-    def __add__(self, other: Rect) -> Rect:
+    def __add__(self, other: Rect):
         minx = min(self.minx, other.minx)
         miny = min(self.miny, other.miny)
         maxx = max(self.maxx, other.maxx)
         maxy = max(self.maxy, other.maxy)
         return Rect(minx, miny, maxx, maxy)
 
-    def translate(self, translation: Vec2) -> None:
+    def translate(self, translation: Vec2):
         self.minx += translation.x
         self.miny += translation.y
         self.maxx += translation.x
         self.maxy += translation.y
 
-    def transform(self, matrix: np.ndarray) -> None:
-        corners = np.array([[self.minx, self.miny, 1], [self.minx, self.maxy, 1], [
-                           self.maxx, self.miny, 1], [self.maxx, self.maxy, 1]])
+    def transform(self, matrix: np.ndarray):
+        corners = np.array([[self.minx, self.miny, 1], [self.minx, self.maxy, 1],
+                            [self.maxx, self.miny, 1], [self.maxx, self.maxy, 1]])
         transformed_corners = corners @ matrix.T
         self.minx = np.min(transformed_corners[:, 0])
         self.miny = np.min(transformed_corners[:, 1])
         self.maxx = np.max(transformed_corners[:, 0])
         self.maxy = np.max(transformed_corners[:, 1])
 
-    @singledispatchmethod
-    def contains(self, other: Rect) -> bool:
-        return (
-            self.minx <= other.minx and
-            self.maxx >= other.maxx and
-            self.miny <= other.miny and
-            self.maxy >= other.maxy
-        )
+    def contains(self, other):
+        if isinstance(other, Rect):
+            return (
+                self.minx <= other.minx and
+                self.maxx >= other.maxx and
+                self.miny <= other.miny and
+                self.maxy >= other.maxy
+            )
+        elif isinstance(other, Vec2):
+            return (
+                self.minx <= other.x <= self.maxx and
+                self.miny <= other.y <= self.maxy
+            )
 
-    @contains.register
-    def _(self, other: Vec2) -> bool:
-        return (
-            self.minx <= other.x <= self.maxx and
-            self.miny <= other.y <= self.maxy
-        )
+    def __str__(self):
+        return f"Rect(minx={self.minx}, miny={self.miny}, maxx={self.maxx}, maxy={self.maxy})"
 
 
 class BezierPoint:
@@ -105,53 +111,52 @@ class BezierPoint:
         if self.control2:
             self.control2.transform(matrix)
 
+    def __str__(self):
+        if self.control1 and self.control2:
+            return f"BezierPoint(pos={self.pos}, control1={self.control1}, control2={self.control2})"
+        elif self.control1:
+            return f"BezierPoint(pos={self.pos}, control1={self.control1})"
+        else:
+            return f"BezierPoint(pos={self.pos})"
+
 
 class BezierContour:
-    def __init__(self):
+    def __init__(self, closed: bool = True):
         self.points = []
+        self.closed = closed
 
     def add_point(self, point: BezierPoint):
         self.points.append(point)
 
     def transform(self, matrix: np.ndarray):
         for point in self.points:
-            point.pos.transform(matrix)
-            if point.control1:
-                point.control1.transform(matrix)
-            if point.control2:
-                point.control2.transform(matrix)
+            point.transform(matrix)
 
     def translate(self, translation: Vec2):
         for point in self.points:
-            point.pos.translate(translation)
-            if point.control1:
-                point.control1.translate(translation)
-            if point.control2:
-                point.control2.translate(translation)
+            point.translate(translation)
 
-    def contains(self, point: Vec2) -> bool:
-        # ray-casting algorithm
-        intersections = 0
-        y = point.y
-
+    def contains(self, point: Vec2):
         for i in range(len(self.points) - 1):
             start = self.points[i].pos
             end = self.points[i + 1].pos
+            control1 = self.points[i].control2
+            control2 = self.points[i + 1].control1
 
-            if (start.y <= y < end.y) or (start.y >= y > end.y):
-                if start.x == end.x and start.y == end.y:
-                    continue
+            if control1 and control2:
+                curve = LineString(
+                    [start.to_tuple(), control1.to_tuple(), control2.to_tuple(), end.to_tuple()])
+            else:
+                curve = LineString([start.to_tuple(), end.to_tuple()])
 
-                x = (y - start.y) * (end.x - start.x) / \
-                    (end.y - start.y) + start.x
+            if curve.contains(Point(point.x, point.y)):
+                return True
 
-                if x == point.x:
-                    return True
+        return False
 
-                if x < point.x:
-                    intersections += 1
-
-        return intersections % 2 == 1
+    def __str__(self):
+        points_str = "\n".join(str(point) for point in self.points)
+        return f"BezierContour(points=[\n{points_str}\n])"
 
 
 class BezierPath:
@@ -161,7 +166,7 @@ class BezierPath:
     def add_contour(self, contour: BezierContour):
         self.contours.append(contour)
 
-    def bounds(self) -> Rect:
+    def bounds(self):
         minx = float('inf')
         miny = float('inf')
         maxx = float('-inf')
@@ -213,49 +218,35 @@ class BezierPath:
         for contour in self.contours:
             contour.translate(translation)
 
-    def contains(self, point: Vec2) -> bool:
-        # Iterate over each contour
+    def contains(self, point: Vec2):
         for contour in self.contours:
-            # Check if the point is inside the contour using the ray casting algorithm
-            if self._is_point_inside_contour(point, contour):
+            if contour.contains(point):
                 return True
 
         return False
 
-    def _is_point_inside_contour(self, point: Vec2, contour: BezierContour) -> bool:
-        # Create a horizontal ray extending to the right from the test point
-        ray = LineString([point.to_tuple(), (point.x + 1, point.y)])
-
-        # Iterate over each curve segment
-        intersections = 0
-        for i in range(len(contour.points) - 1):
-            start = contour.points[i].pos
-            end = contour.points[i + 1].pos
-            control1 = contour.points[i].control2
-            control2 = contour.points[i + 1].control1
-
-            # Create a cubic bezier curve using Shapely
-            curve = LineString(
-                [start.to_tuple(), control1.to_tuple(), control2.to_tuple(), end.to_tuple()])
-
-            # Check if the ray intersects with the curve
-            if curve.intersects(ray):
-                intersections += 1
-
-        # If the number of intersections is odd, the point is inside the contour
-        return intersections % 2 == 1
+    def __str__(self):
+        contours_str = "\n".join(str(contour) for contour in self.contours)
+        return f"BezierPath(contours=[\n{contours_str}\n])"
 
 
 class BezierPathA:
     def __init__(self):
         self.paths = []
 
-    def bounds(self) -> Rect:
+    def bounds(self):
         accum = Rect(float('inf'), float('inf'), float('-inf'), float('-inf'))
         for path in self.paths:
             accum += path.bounds()
 
         return accum
+
+    def contains(self, point: Vec2):
+        for path in self.paths:
+            if path.contains(point):
+                return True
+
+        return False
 
     def scale(self, factor: float):
         scale_matrix = np.array([[factor, 0, 0], [0, factor, 0], [0, 0, 1]])
@@ -269,3 +260,7 @@ class BezierPathA:
     def translate(self, translation: Vec2):
         for path in self.paths:
             path.translate(translation)
+
+    def __str__(self):
+        contours_str = "\n".join(str(contour) for contour in self.paths)
+        return f"BezierPathA(paths=[\n{contours_str}\n])"
