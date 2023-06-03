@@ -40,6 +40,12 @@ class Rect():
         self.maxx = maxx
         self.maxy = maxy
 
+    def width(self) -> float:
+        return abs(self.maxx - self.minx)
+
+    def width(self) -> float:
+        return abs(self.maxy - self.miny)
+
     def translate(self, translation: Vec2) -> None:
         self.minx += translation.x
         self.miny += translation.y
