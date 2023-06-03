@@ -1,6 +1,4 @@
 from __future__ import annotations
-from typing import List
-from functools import singledispatchmethod
 import numpy as np
 from shapely.geometry import Point, LineString
 
@@ -26,6 +24,34 @@ class Vec2:
     def translate(self, other: Vec2):
         self.x += other.x
         self.y += other.y
+
+    def l2_norm(self) -> float:
+        """||X||2
+        Measures simple distance from origin (Euclidean length)"""
+        return (self.x**2 + self.y**2)**(1/2)
+
+    def l2_norm_squared(self) -> float:
+        """||X||2/2
+        computationally cheaper then l2_norm
+        """
+        return (self.x**2 + self.y**2)
+
+    def l1_norm(self) -> float:
+        """L1 Norm"""
+        return (abs(self.x) + abs(self.y))
+
+    def max_norm(self) -> float:
+        """ ||x||8
+        max Norm
+        """
+        return max(abs(self.x), abs(self.y))
+
+    def normalize(self) -> Vec2:
+        current_len = self.l2_norm()
+        if current_len == 0:
+            return Vec2(0.0, 0.0)
+
+        return Vec2(self.x / current_len, self.y / current_len)
 
     def transform(self, matrix: np.ndarray):
         vector = np.array([self.x, self.y, 1])
@@ -233,6 +259,19 @@ class BezierPath:
 class BezierPathA:
     def __init__(self):
         self.paths = []
+        self.__iter = 0
+
+    def __iter__(self):
+        self.__iter = 0
+        return self
+
+    def __next__(self):
+        if self.__iter < len(self.paths):
+            ret = self.paths[self.__iter]
+            self.__iter += 1
+            return ret
+        else:
+            raise StopIteration
 
     def bounds(self):
         accum = Rect(float('inf'), float('inf'), float('-inf'), float('-inf'))
