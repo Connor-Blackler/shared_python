@@ -46,6 +46,13 @@ class Rect():
     def width(self) -> float:
         return abs(self.maxy - self.miny)
 
+    def __add__(self, other: Rect) -> Rect:
+        minx = min(self.minx, other.minx)
+        miny = min(self.miny, other.miny)
+        maxx = max(self.maxx, other.maxx)
+        maxy = max(self.maxy, other.maxy)
+        return Rect(minx, miny, maxx, maxy)
+
     def translate(self, translation: Vec2) -> None:
         self.minx += translation.x
         self.miny += translation.y
@@ -237,3 +244,28 @@ class BezierPath:
 
         # If the number of intersections is odd, the point is inside the contour
         return intersections % 2 == 1
+
+
+class BezierPathA:
+    def __init__(self):
+        self.paths = []
+
+    def bounds(self) -> Rect:
+        accum = Rect(float('inf'), float('inf'), float('-inf'), float('-inf'))
+        for path in self.paths:
+            accum += path.bounds()
+
+        return accum
+
+    def scale(self, factor: float):
+        scale_matrix = np.array([[factor, 0, 0], [0, factor, 0], [0, 0, 1]])
+        for path in self.paths:
+            path.transform(scale_matrix)
+
+    def transform(self, matrix: np.ndarray):
+        for path in self.paths:
+            path.transform(matrix)
+
+    def translate(self, translation: Vec2):
+        for path in self.paths:
+            path.translate(translation)

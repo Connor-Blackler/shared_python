@@ -1,6 +1,7 @@
 import numpy as np
 from .geometry import Rect, Vec2, BezierContour, BezierPath, BezierPoint
 from .binary_search import get_insertion_point
+from shared_python.shared_math.geometry import Rect, Vec2, BezierPathA, BezierPath, BezierContour, BezierPoint
 
 
 def test_get_insertion_point():
