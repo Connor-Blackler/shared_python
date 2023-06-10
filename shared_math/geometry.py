@@ -25,6 +25,11 @@ class Vec2:
 
     __rmul__ = __mul__
 
+    def __truediv__(self, scalar: float):
+        x = self.x / scalar
+        y = self.y / scalar
+        return Vec2(x, y)
+
     def to_tuple(self):
         return self.x, self.y
 
