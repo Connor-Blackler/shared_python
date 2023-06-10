@@ -18,6 +18,13 @@ class Vec2:
         y = self.y - other.y
         return Vec2(x, y)
 
+    def __mul__(self, scalar: float):
+        x = self.x * scalar
+        y = self.y * scalar
+        return Vec2(x, y)
+
+    __rmul__ = __mul__
+
     def to_tuple(self):
         return self.x, self.y
 
